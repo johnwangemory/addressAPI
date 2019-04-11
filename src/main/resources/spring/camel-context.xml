@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd        http://camel.apache.org/schema/spring       http://camel.apache.org/schema/spring/camel-spring.xsd">
+    <camelContext id="context1" xmlns="http://camel.apache.org/schema/spring">
+        <onException>
+            <exception>java.lang.Exception</exception>
+            <handled>
+                <constant>true</constant>
+            </handled>
+            <setHeader headerName="Exchange.HTTP_RESPONSE_CODE">
+                <constant>500</constant>
+            </setHeader>
+            <setBody>
+                <simple>${exception.message}</simple>
+            </setBody>
+        </onException>
+        <restConfiguration apiContextPath="/openapi.json" component="servlet"/>
+        <rest enableCORS="true" id="rest1" path="/">
+            <get id="openapi.json" produces="application/json" uri="openapi.json">
+                <description>Gets the openapi document for this service</description>
+                <route id="rest1-route1">
+                    <setHeader headerName="Exchange.CONTENT_TYPE" id="setHeader-route1">
+                        <constant>application/vnd.oai.openapi+json</constant>
+                    </setHeader>
+                    <setBody id="setBody-route1">
+                        <simple>resource:classpath:openapi.json</simple>
+                    </setBody>
+                </route>
+            </get>
+        </rest>
+        <rest bindingMode="json" enableCORS="true" id="rest2">
+            <get id="get-singleAddress" uri="/addresses/{addressId}">
+                <description>Gets an address</description>
+                <to uri="direct:getAddressbyId"/>
+            </get>
+            <put id="put-updateAddress" uri="/addresses/{addressId}">
+                <description>Updates an address.</description>
+                <to uri="direct:updateAddressbyId"/>
+            </put>
+            <delete id="delete-address" uri="/addresses/{addressId}">
+                <description>Delete an address</description>
+                <to uri="direct:deleteAddressbyId"/>
+            </delete>
+            <get id="get-allAddresses" uri="/addresses">
+                <description>Get All Addresses</description>
+                <to uri="direct:getAlladdresses"/>
+            </get>
+            <post id="post-singleAddress" uri="/addresses">
+                <description>Adds an address.</description>
+                <param name="body" required="false" type="body"/>
+                <to uri="direct:createAddress"/>
+            </post>
+        </rest>
+        <route id="getallAddresses">
+            <from id="Direct Call to Get All Addresses" uri="direct:getAlladdresses"/>
+            <to id="Calling database" uri="sql:select * from Address?dataSource=dataSource"/>
+            <log id="_print all Addresses" message="${body}"/>
+        </route>
+        <route id="updateAddressbyId">
+            <from id="Direct Call to add an Address" uri="direct:addAddress"/>
+            <to id="Calling database for update" uri="sql:update Address set city='New Name' where ID=:#addressId?dataSource=dataSource"/>
+            <log id="_log3" message="${body}"/>
+        </route>
+        <route id="deleteAddressbyId">
+            <from id="Direct database call to delete an address by Id" uri="direct:deleteAddressbyId"/>
+            <to id="Calling database to delete an address " uri="sql:delete from Address where ID=:#addressId?dataSource=dataSource"/>
+            <log id="_log2" message="${body}"/>
+        </route>
+        <route id="get-SingleAddress">
+            <from id="Direct call to get an address by ID" uri="direct:getAddressbyId"/>
+            <to id="Calling database to get single address" uri="sql:select * from Address where ID=:#addressId?dataSource=dataSource"/>
+            <log id="_print Single Addres" message="Address has been deleted"/>
+        </route>
+        <route id="post-addAddress">
+            <from id="Direct call to create an address" uri="direct:createAddress"/>
+            <to id="Calling database to add an address" uri="sql:INSERT INTO Address (ID,City,State) VALUES (:#ID,:#CITY,:#STATE)?dataSource=dataSource"/>
+            <log id="_log1" message="${body}"/>
+        </route>
+        <route id="route2">
+            <from id="from-route2" uri="direct:501"/>
+            <log id="log-route2" message="API operation not yet implemented: ${headers.CamelHttpMethod} ${headers.CamelHttpPath}"/>
+            <setHeader headerName="Exchange.HTTP_RESPONSE_CODE" id="setHeader-route2">
+                <constant>501</constant>
+            </setHeader>
+            <setBody id="setBody-route2">
+                <simple>API operation not implemented: ${headers.CamelHttpMethod} ${headers.CamelHttpPath}</simple>
+            </setBody>
+        </route>
+    </camelContext>
+</beans>

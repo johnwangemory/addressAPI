@@ -1,0 +1,96 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "AddressBook API",
+        "description": "A brand new API with no content.  Go nuts!",
+        "version": "1.0"
+    },
+    "consumes": [
+        "application/json"
+    ],
+    "produces": [
+        "application/json"
+    ],
+    "paths": {
+        "/addresses/{addressId}": {
+            "get": {
+                "description": "Gets an address",
+                "responses": {
+                    "200": {
+                        "description": "Display an address"
+                    }
+                }
+            },
+            "put": {
+                "description": "Updates an address.",
+                "responses": {
+                    "201": {
+                        "description": "An address has been updated."
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes an address",
+                "responses": {
+                    "200": {
+                        "description": "An address has been deleted."
+                    }
+                }
+            },
+            "parameters": [
+                {
+                    "name": "addressId",
+                    "in": "path",
+                    "required": true,
+                    "type": "string"
+                }
+            ]
+        },
+        "/addresses": {
+            "get": {
+                "description": "Lists all addressses",
+                "responses": {
+                    "200": {
+                        "description": "Display a list of addresses."
+                    }
+                }
+            },
+            "post": {
+                "description": "Adds an address.",
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/Addres"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "An address has been added."
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "Addres": {
+            "title": "Root Type for Addres",
+            "description": "The root of the Addres type's schema.",
+            "type": "object",
+            "properties": {
+                "Id": {
+                    "type": "string"
+                },
+                "City": {
+                    "type": "string"
+                },
+                "State": {
+                    "type": "string"
+                }
+            },
+            "example": "{\n\"Id\" : \"12345\",\n\"City\" : \"Boston\",\n\"State\" : \"MA\"\n}"
+        }
+    }
+}
